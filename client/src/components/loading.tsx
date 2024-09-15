@@ -1,7 +1,16 @@
-type Props = {}
+import { Box, CircularProgress } from '@mui/material';
 
-export default function Loading({}: Props) {
+export default function Loading() {
   return (
-    <div>loading...</div>
-  )
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh', // Tam sayfa yüksekliği
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
 }
