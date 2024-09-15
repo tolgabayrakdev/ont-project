@@ -1,7 +1,9 @@
-type Props = {}
+import { Center, Loader } from '@mantine/core';
 
-export default function Loading({}: Props) {
+export default function Loading() {
   return (
-    <div>loading...</div>
-  )
+    <Center style={{ width: '100vw', height: '100vh' }}>
+      <Loader size="lg" variant="bars" />
+    </Center>
+  );
 }
