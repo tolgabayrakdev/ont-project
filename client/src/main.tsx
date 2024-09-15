@@ -5,12 +5,18 @@ import './index.css'
 import { RouterProvider } from 'react-router-dom'
 import routes from './routes'
 import Loading from './components/loading'
-import { MantineProvider } from '@mantine/core'
+import { createTheme, MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
+
+const theme = createTheme({
+  fontFamily: 'Open Sans, sans-serif',
+  primaryColor: "dark",
+});
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider>
+    <MantineProvider theme={theme}>
       <Notifications position="bottom-center" />
       <Suspense fallback={<Loading />}>
         <RouterProvider router={routes} />
