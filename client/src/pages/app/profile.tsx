@@ -14,6 +14,8 @@ export default function Profile() {
       message: 'Profil bilgileriniz başarıyla güncellendi.',
       color: 'green',
       icon: <IconCheck size="1.1rem" />,
+      position: 'top-right',
+      autoClose: 1500
     });
   };
 
@@ -25,6 +27,8 @@ export default function Profile() {
       message: 'Şifreniz başarıyla değiştirildi.',
       color: 'green',
       icon: <IconCheck size="1.1rem" />,
+      position: 'top-right',
+      autoClose: 1500
     });
   };
 

@@ -34,7 +34,7 @@ export default function AppLayout() {
                 header={{ height: 60 }}
                 footer={{ height: 60 }}
                 navbar={{
-                    width: 200,
+                    width: 220,
                     breakpoint: 'sm',
                     collapsed: { mobile: !opened },
                 }}
@@ -82,7 +82,7 @@ export default function AppLayout() {
                                 variant={location.pathname === '/app' ? activeVariant : inactiveVariant}
                                 color={buttonColor}
                                 fullWidth
-                                leftSection={<IconHome size="1.2rem" style={{ marginRight: '10px' }} />}
+                                leftSection={<IconHome size="1.2rem" />}
                                 styles={{ inner: { justifyContent: 'flex-start' } }}
                             >
                                 Ana Sayfa
@@ -93,7 +93,7 @@ export default function AppLayout() {
                                 variant={isActive('profile') ? activeVariant : inactiveVariant}
                                 color={buttonColor}
                                 fullWidth
-                                leftSection={<IconUser size="1.2rem" style={{ marginRight: '10px' }} />}
+                                leftSection={<IconUser size="1.2rem" />}
                                 styles={{ inner: { justifyContent: 'flex-start' } }}
                             >
                                 Profil
@@ -104,7 +104,7 @@ export default function AppLayout() {
                                 variant={isActive('settings') ? activeVariant : inactiveVariant}
                                 color={buttonColor}
                                 fullWidth
-                                leftSection={<IconSettings size="1.2rem" style={{ marginRight: '10px' }} />}
+                                leftSection={<IconSettings size="1.2rem" />}
                                 styles={{ inner: { justifyContent: 'flex-start' } }}
                             >
                                 Ayarlar

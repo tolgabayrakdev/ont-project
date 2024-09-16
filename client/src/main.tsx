@@ -1,6 +1,7 @@
 import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import './index.css'
 import { RouterProvider } from 'react-router-dom'
 import routes from './routes'
@@ -17,7 +18,7 @@ const theme = createTheme({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme}>
-      <Notifications position="top-center" />
+      <Notifications />
       <Suspense fallback={<Loading />}>
         <RouterProvider router={routes} />
       </Suspense>
