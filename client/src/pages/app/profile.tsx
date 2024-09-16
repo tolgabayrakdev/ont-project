@@ -40,20 +40,30 @@ export default function Profile() {
     fetchUserData();
   }, []);
 
-  const handleProfileUpdate = () => {
+  const handleProfileUpdate = async () => {
     if (isEditing) {
-      // Burada profil güncelleme işlemini gerçekleştirin
-      console.log('Profil bilgileri güncellendi:', { username, email });
-
-      notifications.show({
-        title: 'Profil Güncellendi',
-        message: 'Profil bilgileriniz başarıyla güncellendi.',
-        color: 'green',
-        icon: <IconCheck size="1.1rem" />,
-        withCloseButton: false,
-        autoClose: 1500
+      const res = await fetch('http://localhost:8000/api/v1/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username,
+          email
+        })
       });
-      setIsEditing(false);
+      if (res.ok) {
+        setIsEditing(false);
+        notifications.show({
+          title: 'Profil Güncellendi',
+          message: 'Profil bilgileriniz başarıyla güncellendi.',
+          color: 'green',
+          icon: <IconCheck size="1.1rem" />,
+          withCloseButton: false,
+          autoClose: 1500
+        });
+      }
     } else {
       setIsEditing(true);
     }
@@ -93,25 +103,42 @@ export default function Profile() {
 
   const handleAvatarUpload = async (file: File | null) => {
     if (file) {
-      const res = await fetch('http://localhost:8000/api/v1/user/update-photo', {
-        method: 'PUT',
-        credentials: 'include',
-        body: file
-      })
-      if (res.status === 200) {
-        const imageUrl = URL.createObjectURL(file);
-        setAvatarUrl(imageUrl);
+      const formData = new FormData();
+      formData.append('file', file);
 
+      try {
+        const res = await fetch('http://localhost:8000/api/v1/user/update-photo', {
+          method: 'PUT',
+          credentials: 'include',
+          body: formData
+        });
+
+        if (res.ok) {
+          const imageUrl = URL.createObjectURL(file);
+          setAvatarUrl(imageUrl);
+
+          notifications.show({
+            title: 'Profil Resmi Güncellendi',
+            message: 'Profil resminiz başarıyla güncellendi.',
+            color: 'green',
+            icon: <IconCheck size="1.1rem" />,
+            withCloseButton: false,
+            autoClose: 1500
+          });
+        } else {
+          throw new Error('Profil resmi güncellenemedi');
+        }
+      } catch (error) {
+        console.error('Profil resmi yüklenirken hata oluştu:', error);
         notifications.show({
-          title: 'Profil Resmi Güncellendi',
-          message: 'Profil resminiz başarıyla güncellendi.',
-          color: 'green',
-          icon: <IconCheck size="1.1rem" />,
+          title: 'Hata',
+          message: 'Profil resmi yüklenirken bir hata oluştu.',
+          color: 'red',
+          icon: <IconX size="1.1rem" />,
           withCloseButton: false,
           autoClose: 1500
         });
       }
-
     }
   };
 
