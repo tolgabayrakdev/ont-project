@@ -1,7 +1,7 @@
 import { Tabs, Text, TextInput, Button, PasswordInput, Box } from '@mantine/core';
 import { useState } from 'react';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconX } from '@tabler/icons-react';
+import { IconCheck } from '@tabler/icons-react';
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<string | null>('profile');

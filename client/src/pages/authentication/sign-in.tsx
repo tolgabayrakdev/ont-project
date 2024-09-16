@@ -1,8 +1,12 @@
 import { TextInput, PasswordInput, Button, Paper, Title, Container, Text, Anchor, Group } from '@mantine/core';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from '@mantine/form';
+import { useState } from 'react';
+import { notifications } from '@mantine/notifications';
 
 export default function SignIn() {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const form = useForm({
     initialValues: {
       email: '',
@@ -14,9 +18,54 @@ export default function SignIn() {
     },
   });
 
-  const handleSubmit = form.onSubmit((values) => {
-    console.log(values);
-    // Burada giriş işlemini gerçekleştirin
+  const handleSubmit = form.onSubmit(async (values) => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/authentication/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password
+        })
+      })
+      if (res.status === 200) {
+        notifications.show({
+          title: 'Giriş Basarılı',
+          message: 'Yönlendiriliyorsunuz...',
+          color: 'green',
+          position: 'top-right',
+          autoClose: 1500
+        })
+        setTimeout(() => {
+          setLoading(false);
+          navigate('/app');
+        }, 1000)
+      } else {
+        setTimeout(() => {
+          setLoading(false);
+          notifications.show({
+            title: 'Hata',
+            message: 'E-posta ya da sifre hatalı',
+            color: 'yellow',
+            position: 'top-right',
+            autoClose: 1500
+          })
+        }, 1000)
+      }
+    } catch (error) {
+      notifications.show({
+        title: 'Hata',
+        message: 'Beklenmedik bir hata oluştu',
+        color: 'red',
+        position: 'top-right',
+        autoClose: 1500
+      })
+      setLoading(false);
+      throw error;
+    }
   });
 
   return (
@@ -42,7 +91,7 @@ export default function SignIn() {
               Şifremi unuttum
             </Anchor>
           </Group>
-          <Button type="submit" fullWidth mt="lg">
+          <Button loading={loading} type="submit" fullWidth mt="lg">
             Giriş Yap
           </Button>
         </form>
