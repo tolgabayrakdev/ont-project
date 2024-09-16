@@ -47,8 +47,7 @@ async def verify_user(request: Request, db: Session = Depends(get_db)):
             if result:
                 full_image_url = None
                 if result.image_url:  # type: ignore
-                    # /media/ önekini /uploads/ ile değiştir
-                    image_path = result.image_url.replace("/media/", "/uploads/")
+                    image_path = result.image_url
                     full_image_url = f"{request.base_url.scheme}://{request.base_url.netloc}{image_path}"
 
                 return {
