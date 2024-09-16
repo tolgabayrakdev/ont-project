@@ -16,12 +16,10 @@ const theme = createTheme({
 
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <MantineProvider theme={theme}>
-      <Notifications />
-      <Suspense fallback={<Loading />}>
-        <RouterProvider router={routes} />
-      </Suspense>
-    </MantineProvider>
-  </StrictMode>,
+  <MantineProvider theme={theme}>
+    <Notifications position="top-right" />
+    <Suspense fallback={<Loading />}>
+      <RouterProvider router={routes} />
+    </Suspense>
+  </MantineProvider>
 )

@@ -21,24 +21,18 @@ export default function SignIn() {
   const handleSubmit = form.onSubmit(async (values) => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/authentication/login', {
+      const res = await fetch('http://localhost:8000/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: "include",
         body: JSON.stringify({
           email: values.email,
           password: values.password
         })
       })
       if (res.status === 200) {
-        notifications.show({
-          title: 'Giriş Basarılı',
-          message: 'Yönlendiriliyorsunuz...',
-          color: 'green',
-          position: 'top-right',
-          autoClose: 1500
-        })
         setTimeout(() => {
           setLoading(false);
           navigate('/app');
@@ -50,7 +44,7 @@ export default function SignIn() {
             title: 'Hata',
             message: 'E-posta ya da sifre hatalı',
             color: 'yellow',
-            position: 'top-right',
+            withCloseButton: false,
             autoClose: 1500
           })
         }, 1000)
@@ -60,7 +54,7 @@ export default function SignIn() {
         title: 'Hata',
         message: 'Beklenmedik bir hata oluştu',
         color: 'red',
-        position: 'top-right',
+        withCloseButton: false,
         autoClose: 1500
       })
       setLoading(false);

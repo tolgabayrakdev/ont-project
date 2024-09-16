@@ -2,9 +2,9 @@ import { AppShell, Group, Text, Button, ActionIcon, useMantineColorScheme, Loade
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { IconSun, IconMoon, IconUser, IconSettings, IconHome } from '@tabler/icons-react';
 import { useState } from 'react';
-import { Notifications } from '@mantine/notifications';
+import AuthWrapper from '../wrappers/auth-wrapper';
 
-export default function AppLayout() {
+function AppLayout() {
     const { colorScheme, toggleColorScheme } = useMantineColorScheme();
     const dark = colorScheme === 'dark';
     const location = useLocation();
@@ -18,18 +18,23 @@ export default function AppLayout() {
     const activeVariant = dark ? 'light' : 'filled';
     const inactiveVariant = 'subtle';
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setIsLoggingOut(true);
-        // Burada çıkış işlemlerini gerçekleştirin (örneğin, API çağrısı)
-        setTimeout(() => {
-            setIsLoggingOut(false);
-            navigate('/sign-in'); // sign-in sayfasına yönlendir
-        }, 2000); // 2 saniye sonra yönlendir (simülasyon amaçlı)
+        const res = await fetch('http://localhost:8000/api/v1/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+        })
+        if (res.status === 200) {
+            setTimeout(() => {
+                setIsLoggingOut(false);
+                navigate('/sign-in'); // sign-in sayfasına yönlendir
+            }, 1500); // 2 saniye sonra yönlendir (simülasyon amaçlı)
+        }
+
     };
 
     return (
         <>
-            <Notifications position="top-center" />
             <AppShell
                 header={{ height: 60 }}
                 footer={{ height: 60 }}
@@ -126,3 +131,5 @@ export default function AppLayout() {
         </>
     );
 }
+
+export default AuthWrapper(AppLayout);

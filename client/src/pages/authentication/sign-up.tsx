@@ -1,8 +1,12 @@
 import { TextInput, PasswordInput, Button, Paper, Title, Container, Text, Anchor } from '@mantine/core';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from '@mantine/form';
+import { useState } from 'react';
+import { notifications } from '@mantine/notifications';
 
 export default function SignUp() {
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
     const form = useForm({
         initialValues: {
             username: '',
@@ -19,9 +23,49 @@ export default function SignUp() {
         },
     });
 
-    const handleSubmit = form.onSubmit((values) => {
-        console.log(values);
-        // Burada kayıt işlemini gerçekleştirin
+    const handleSubmit = form.onSubmit(async (values) => {
+        setLoading(true);
+        try {
+            const res = await fetch('http://localhost:8000/api/v1/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    username: values.username,
+                    email: values.email,
+                    password: values.password
+                })
+            })
+            if (res.status === 201) {
+                notifications.show({
+                    title: 'Hesap oluşturuldu',
+                    message: 'Giriş Ekranına Yönlendiriliyorsunuz...',
+                    color: 'green',
+                    withCloseButton: false,
+                    autoClose: 1500
+                  })
+                setTimeout(() => {
+                    setLoading(false);
+                    navigate("/sign-in");
+                }, 1500)
+            } else {
+                setTimeout(() => {
+                    setLoading(false);
+                    notifications.show({
+                        title: 'Hata',
+                        message: 'E-posta ya da sifre hatalı',
+                        color: 'yellow',
+                        withCloseButton: false,
+                        autoClose: 1500
+                    })
+                }, 1500)
+            }
+        } catch (error) {
+            setLoading(false)
+            throw error;
+        }
     });
 
     return (
@@ -56,7 +100,7 @@ export default function SignUp() {
                         mt="md"
                         {...form.getInputProps('confirmPassword')}
                     />
-                    <Button type="submit" fullWidth mt="xl">
+                    <Button loading={loading} type="submit" fullWidth mt="xl">
                         Kayıt Ol
                     </Button>
                 </form>
