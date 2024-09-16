@@ -1,7 +1,7 @@
-import { Tabs, Text, TextInput, Button, PasswordInput, Box, Group, Modal } from '@mantine/core';
+import { Tabs, Text, TextInput, Button, PasswordInput, Box, Group, Modal, Avatar, FileButton } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconTrash } from '@tabler/icons-react';
+import { IconCheck, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<string | null>('profile');
@@ -9,6 +9,7 @@ export default function Profile() {
   const [email, setEmail] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -24,6 +25,7 @@ export default function Profile() {
         console.log(userData);
         setUsername(userData.user.username);
         setEmail(userData.user.email);
+        setAvatarUrl(userData.user.photo); // Kullanıcının mevcut avatar URL'sini ayarla
       } catch (error) {
         console.error('Kullanıcı bilgileri alınamadı:', error);
         notifications.show({
@@ -42,7 +44,7 @@ export default function Profile() {
     if (isEditing) {
       // Burada profil güncelleme işlemini gerçekleştirin
       console.log('Profil bilgileri güncellendi:', { username, email });
-      
+
       notifications.show({
         title: 'Profil Güncellendi',
         message: 'Profil bilgileriniz başarıyla güncellendi.',
@@ -89,6 +91,48 @@ export default function Profile() {
     setIsDeleteModalOpen(false);
   };
 
+  const handleAvatarUpload = async (file: File | null) => {
+    if (file) {
+      const res = await fetch('http://localhost:8000/api/v1/user/update-photo', {
+        method: 'PUT',
+        credentials: 'include',
+        body: file
+      })
+      if (res.status === 200) {
+        const imageUrl = URL.createObjectURL(file);
+        setAvatarUrl(imageUrl);
+
+        notifications.show({
+          title: 'Profil Resmi Güncellendi',
+          message: 'Profil resminiz başarıyla güncellendi.',
+          color: 'green',
+          icon: <IconCheck size="1.1rem" />,
+          withCloseButton: false,
+          autoClose: 1500
+        });
+      }
+
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setAvatarUrl(null);
+    const res = await fetch('http://localhost:8000/api/v1/user/delete-photo', {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+    if (res.status === 200) {
+      notifications.show({
+        title: 'Profil Resmi Kaldırıldı',
+        message: 'Profil resminiz başarıyla kaldırıldı.',
+        color: 'blue',
+        icon: <IconX size="1.1rem" />,
+        withCloseButton: false,
+        autoClose: 1500
+      });
+    };
+  }
+
   return (
     <Box>
       <Text size="xl" fw={700} mb="md">Profil</Text>
@@ -100,6 +144,19 @@ export default function Profile() {
 
         <Tabs.Panel value="profile">
           <Box mt="md">
+            <Group mb="md">
+              <Avatar src={avatarUrl} size="xl" radius="xl" />
+              <Box>
+                <FileButton onChange={handleAvatarUpload} accept="image/png,image/jpeg">
+                  {(props) => <Button {...props} leftSection={<IconUpload size="1rem" />}>Resim Yükle</Button>}
+                </FileButton>
+                {avatarUrl && (
+                  <Button ml="xs" color="red" onClick={handleRemoveAvatar} leftSection={<IconTrash size="1rem" />}>
+                    Resmi Kaldır
+                  </Button>
+                )}
+              </Box>
+            </Group>
             <TextInput
               label="Kullanıcı Adı"
               placeholder="Kullanıcı adınız"
