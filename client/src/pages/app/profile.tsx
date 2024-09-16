@@ -36,7 +36,6 @@ export default function Profile() {
         });
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -69,9 +68,8 @@ export default function Profile() {
     }
   };
 
-  const handlePasswordChange = () => {
-    // Burada şifre değiştirme işlemini gerçekleştirin
-    // Örnek olarak başarılı olduğunu varsayalım
+  const handlePasswordChange = async () => {
+
     notifications.show({
       title: 'Şifre Değiştirildi',
       message: 'Şifreniz başarıyla değiştirildi.',
