@@ -44,18 +44,6 @@ class InterestService:
             )
 
     @staticmethod
-    def get_interest_by_id(db: Session, interest_id: int):
-        try:
-            interest = db.query(Interest).filter(Interest.id == interest_id).first()
-            if not interest:
-                raise HTTPException(status_code=404, detail="Interest not found")
-            return interest
-        except SQLAlchemyError:
-            raise HTTPException(
-                status_code=500, detail="An unexpected server error occurred."
-            )
-
-    @staticmethod
     def get_all_interests(db: Session):
         try:
             interests = db.query(Interest).all()
