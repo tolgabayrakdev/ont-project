@@ -10,13 +10,16 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/auth/verify', {
           method: "POST",
-          credentials: 'include' // Eğer API çağrısı için kimlik doğrulama gerekiyorsa
+          credentials: 'include'
         });
         if (!response.ok) {
           throw new Error('Sunucu yanıtı başarısız');
@@ -69,15 +72,55 @@ export default function Profile() {
   };
 
   const handlePasswordChange = async () => {
+    if (newPassword !== confirmNewPassword) {
+      notifications.show({
+        title: 'Hata',
+        message: 'Yeni şifreler eşleşmiyor.',
+        color: 'red',
+        icon: <IconX size="1.1rem" />,
+        withCloseButton: false,
+        autoClose: 1500
+      });
+      return;
+    }
 
-    notifications.show({
-      title: 'Şifre Değiştirildi',
-      message: 'Şifreniz başarıyla değiştirildi.',
-      color: 'green',
-      icon: <IconCheck size="1.1rem" />,
-      withCloseButton: false,
-      autoClose: 1500
-    });
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/user/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+      if (res.status === 200) {
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        notifications.show({
+          title: 'Şifre Değiştirildi',
+          message: 'Şifreniz başarıyla değiştirildi.',
+          color: 'green',
+          icon: <IconCheck size="1.1rem" />,
+          withCloseButton: false,
+          autoClose: 1500
+        });
+      } else {
+        throw new Error('Şifre değiştirilemedi');
+      }
+    } catch (error) {
+      notifications.show({
+        title: 'Hata',
+        message: 'Şifre değiştirme işlemi başarısız oldu.',
+        color: 'red',
+        icon: <IconX size="1.1rem" />,
+        withCloseButton: false,
+        autoClose: 1500
+      });
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -215,16 +258,22 @@ export default function Profile() {
               label="Mevcut Şifre"
               placeholder="Mevcut şifrenizi girin"
               mb="sm"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.currentTarget.value)}
             />
             <PasswordInput
               label="Yeni Şifre"
               placeholder="Yeni şifrenizi girin"
               mb="sm"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.currentTarget.value)}
             />
             <PasswordInput
               label="Yeni Şifre (Tekrar)"
               placeholder="Yeni şifrenizi tekrar girin"
               mb="sm"
+              value={confirmNewPassword}
+              onChange={(event) => setConfirmNewPassword(event.currentTarget.value)}
             />
             <Button onClick={handlePasswordChange}>Şifreyi Değiştir</Button>
           </Box>
