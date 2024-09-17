@@ -1,6 +1,6 @@
 import { AppShell, Group, Text, Button, ActionIcon, useMantineColorScheme, Loader, Burger, Stack } from '@mantine/core';
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { IconSun, IconMoon, IconUser, IconSettings, IconHome } from '@tabler/icons-react';
+import { IconSun, IconMoon, IconUser, IconHome } from '@tabler/icons-react';
 import { useState } from 'react';
 import AuthWrapper from '../wrappers/auth-wrapper';
 
@@ -27,8 +27,8 @@ function AppLayout() {
         if (res.status === 200) {
             setTimeout(() => {
                 setIsLoggingOut(false);
-                navigate('/sign-in'); // sign-in sayfasına yönlendir
-            }, 1500); // 2 saniye sonra yönlendir (simülasyon amaçlı)
+                navigate('/sign-in');
+            }, 1500); // 
         }
 
     };
