@@ -71,7 +71,7 @@ class UserService:
 
         # Kullanıcının eski fotoğrafını sil (eğer varsa)
         if user.image_url: # type: ignore
-            old_file_path = user.image_url.replace("/uploads/", "uploads/")
+            old_file_path = os.path.join(upload_dir, user.image_url.split("/")[-1])
             if os.path.exists(old_file_path):
                 try:
                     os.remove(old_file_path)
@@ -93,7 +93,7 @@ class UserService:
 
         if user.image_url: # type: ignore
             # Dosyayı sil
-            file_path = user.image_url.replace("/media/", "uploads/")
+            file_path = os.path.join("uploads", user.image_url.split("/")[-1])  # image_url'deki dosya adını kullan
             if os.path.exists(file_path):
                 os.remove(file_path)
 
