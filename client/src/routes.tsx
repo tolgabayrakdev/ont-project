@@ -10,7 +10,6 @@ const NotFoundPage = lazy(() => import('./pages/not-found'));
 const AppLayout = lazy(() => import('./layouts/app-layout'));
 const AppIndexPage = lazy(() => import('./pages/app/index'));
 const AppProfilePage = lazy(() => import('./pages/app/profile'));
-const AppSettingsPage = lazy(() => import('./pages/app/settings'));
 
 const routes = createBrowserRouter([
     {
@@ -35,7 +34,6 @@ const routes = createBrowserRouter([
         children: [
             { path: "", element: <AppIndexPage />, index: true },
             { path: "profile", element: <AppProfilePage /> },
-            { path: "settings", element: <AppSettingsPage /> },
         ]
     }
 ]);

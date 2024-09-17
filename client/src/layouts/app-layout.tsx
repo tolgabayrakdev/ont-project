@@ -103,17 +103,6 @@ function AppLayout() {
                             >
                                 Profil
                             </Button>
-                            <Button
-                                component={Link}
-                                to="settings"
-                                variant={isActive('settings') ? activeVariant : inactiveVariant}
-                                color={buttonColor}
-                                fullWidth
-                                leftSection={<IconSettings size="1.2rem" />}
-                                styles={{ inner: { justifyContent: 'flex-start' } }}
-                            >
-                                Ayarlar
-                            </Button>
                         </Stack>
                     </Stack>
                 </AppShell.Navbar>
