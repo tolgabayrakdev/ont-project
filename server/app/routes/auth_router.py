@@ -17,9 +17,9 @@ async def login(user: LoginUser, response: Response, db: Session = Depends(get_d
     result = AuthenticationService.login(
         email=user.email, password=user.password, db=db
     )
-    response.set_cookie(key="access_token", value=result["access_token"], httponly=True)
+    response.set_cookie(key="access_token", value=result["access_token"], httponly=True, samesite=None)
     response.set_cookie(
-        key="refresh_token", value=result["refresh_token"], httponly=True
+        key="refresh_token", value=result["refresh_token"], httponly=True, samesite=None
     )
     return {"message": "Login is successful."}
 
