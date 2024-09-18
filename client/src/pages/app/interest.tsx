@@ -40,7 +40,7 @@ export default function Interest() {
 
   const fetchInterests = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/interest/all', {
+      const response = await fetch('https://ont-project.onrender.com/api/v1/interest/all', {
         credentials: 'include'
       });
       if (!response.ok) {
@@ -55,7 +55,7 @@ export default function Interest() {
 
   const fetchUserInterests = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/interest', {
+      const response = await fetch('https://ont-project.onrender.com/api/v1/interest', {
         credentials: 'include'
       });
       if (!response.ok) {
@@ -82,7 +82,7 @@ export default function Interest() {
   const handleSaveInterests = async () => {
     try {
       const interestIds = selectedInterests.map(interest => interest.interest_id);
-      const response = await fetch('http://localhost:8000/api/v1/interest', {
+      const response = await fetch('https://ont-project.onrender.com/api/v1/interest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

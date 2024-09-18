@@ -68,13 +68,13 @@ export default function Index() {
 
   const fetchUserInterestsAndPosts = async () => {
     try {
-      const interestsRes = await fetch("http://localhost:8000/api/v1/interest", {
+      const interestsRes = await fetch("https://ont-project.onrender.com/api/v1/interest", {
         credentials: 'include'
       });
       const interestsData = await interestsRes.json();
       setInterests(interestsData);
 
-      const postsRes = await fetch("http://localhost:8000/api/v1/post", {
+      const postsRes = await fetch("https://ont-project.onrender.com/api/v1/post", {
         credentials: 'include'
       });
       const postsData = await postsRes.json();
@@ -95,7 +95,7 @@ export default function Index() {
   const handlePostShare = async () => {
     if (newPostTitle && newPost && selectedCategory) {
       try {
-        const response = await fetch("http://localhost:8000/api/v1/post", {
+        const response = await fetch("https://ont-project.onrender.com/api/v1/post", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -131,7 +131,7 @@ export default function Index() {
 
   const handlePostExpand = async (post: Post) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/post/${post.id}`, {
+      const response = await fetch(`https://ont-project.onrender.com/api/v1/post/${post.id}`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -200,7 +200,7 @@ export default function Index() {
           return (
             <Card key={post.id} shadow="sm" p="lg">
               <Group mb="xs">
-                <Avatar src={post.author.image_url ? "http://localhost:8000" + post.author.image_url : undefined} radius="xl" />
+                <Avatar src={post.author.image_url ? "https://ont-project.onrender.com" + post.author.image_url : undefined} radius="xl" />
                 <Text>{post.author.username}</Text>
               </Group>
               <Text size="lg" fw={700} mb="xs">{post.title}</Text>
@@ -228,7 +228,7 @@ export default function Index() {
         {selectedPost && (
           <Box>
             <Group mb="md">
-              <Avatar src={selectedPost.author.image_url ? "http://localhost:8000" + selectedPost.author.image_url : undefined} radius="xl" size="lg" />
+              <Avatar src={selectedPost.author.image_url ? "https://ont-project.onrender.com" + selectedPost.author.image_url : undefined} radius="xl" size="lg" />
               <Box>
                 <Text size="lg" fw={700}>{selectedPost.author.username}</Text>
                 <Text size="sm" c="dimmed">Oluşturulma: {new Date(selectedPost.created_at).toLocaleString()}</Text>
@@ -248,7 +248,7 @@ export default function Index() {
                 {selectedPost.comments.map((comment) => (
                   <Card key={comment.id} shadow="sm" p="sm">
                     <Group mb="xs">
-                      <Avatar src={comment.author.image_url ? "http://localhost:8000" + comment.author.image_url : undefined} radius="xl" size="sm" />
+                      <Avatar src={comment.author.image_url ? "https://ont-project.onrender.com" + comment.author.image_url : undefined} radius="xl" size="sm" />
                       <Text size="sm" fw={500}>{comment.author.username}</Text>
                     </Group>
                     <Text size="sm">{comment.content}</Text>

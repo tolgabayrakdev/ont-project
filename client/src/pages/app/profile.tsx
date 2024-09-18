@@ -17,7 +17,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/auth/verify', {
+        const response = await fetch('https://ont-project.onrender.com/api/v1/auth/verify', {
           method: "POST",
           credentials: 'include'
         });
@@ -44,7 +44,7 @@ export default function Profile() {
 
   const handleProfileUpdate = async () => {
     if (isEditing) {
-      const res = await fetch('http://localhost:8000/api/v1/user/profile', {
+      const res = await fetch('https://ont-project.onrender.com/api/v1/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ export default function Profile() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/user/change-password', {
+      const res = await fetch('https://ont-project.onrender.com/api/v1/user/change-password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -148,7 +148,7 @@ export default function Profile() {
       formData.append('file', file);
 
       try {
-        const res = await fetch('http://localhost:8000/api/v1/user/update-photo', {
+        const res = await fetch('https://ont-project.onrender.com/api/v1/user/update-photo', {
           method: 'PUT',
           credentials: 'include',
           body: formData
@@ -185,7 +185,7 @@ export default function Profile() {
 
   const handleRemoveAvatar = async () => {
     setAvatarUrl(null);
-    const res = await fetch('http://localhost:8000/api/v1/user/delete-photo', {
+    const res = await fetch('https://ont-project.onrender.com/api/v1/user/delete-photo', {
       method: 'DELETE',
       credentials: 'include',
     })
