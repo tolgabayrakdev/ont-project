@@ -1,6 +1,6 @@
 import { AppShell, Group, Text, Button, ActionIcon, useMantineColorScheme, Loader, Burger, Stack } from '@mantine/core';
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { IconSun, IconMoon, IconUser, IconHome } from '@tabler/icons-react';
+import { IconSun, IconMoon, IconUser, IconHome, IconTags } from '@tabler/icons-react';
 import { useState } from 'react';
 import AuthWrapper from '../wrappers/auth-wrapper';
 
@@ -94,6 +94,17 @@ function AppLayout() {
                             </Button>
                             <Button
                                 component={Link}
+                                to="interest"
+                                variant={isActive('interest') ? activeVariant : inactiveVariant}
+                                color={buttonColor}
+                                fullWidth
+                                leftSection={<IconTags size="1.2rem" />}
+                                styles={{ inner: { justifyContent: 'flex-start' } }}
+                            >
+                                İlgi Alanları
+                            </Button>
+                            <Button
+                                component={Link}
                                 to="profile"
                                 variant={isActive('profile') ? activeVariant : inactiveVariant}
                                 color={buttonColor}
@@ -121,4 +132,4 @@ function AppLayout() {
     );
 }
 
-export default AuthWrapper(AppLayout);
+export default AppLayout;

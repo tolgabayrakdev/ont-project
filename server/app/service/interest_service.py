@@ -26,6 +26,7 @@ class InterestService:
         try:
             user_interest = (
                 db.query(UserInterest)
+                .join(Interest, UserInterest.interest_id == Interest.id)
                 .filter(
                     UserInterest.user_id == user_id,
                     UserInterest.interest_id == interest_id,
@@ -34,9 +35,10 @@ class InterestService:
             )
             if not user_interest:
                 raise HTTPException(status_code=404, detail="User interest not found")
+            
             db.delete(user_interest)
             db.commit()
-            return user_interest
+            return {"message": "Interest removed successfully"}
         except SQLAlchemyError:
             db.rollback()
             raise HTTPException(
@@ -48,6 +50,27 @@ class InterestService:
         try:
             interests = db.query(Interest).all()
             return interests
+        except SQLAlchemyError:
+            raise HTTPException(
+                status_code=500, detail="An unexpected server error occurred."
+            )
+
+    @staticmethod
+    def get_user_interests(db: Session, user_id: int):
+        try:
+            user_interests = (
+                db.query(UserInterest, Interest.name)
+                .join(Interest, UserInterest.interest_id == Interest.id)
+                .filter(UserInterest.user_id == user_id)
+                .all()
+            )
+            return [
+                {
+                    "user_id": ui.UserInterest.user_id,
+                    "interest_name": ui.name
+                }
+                for ui in user_interests
+            ]
         except SQLAlchemyError:
             raise HTTPException(
                 status_code=500, detail="An unexpected server error occurred."

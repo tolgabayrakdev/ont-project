@@ -10,12 +10,20 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
+    password = Column(String, nullable=False)
     bio = Column(Text, nullable=True)
+    image_url = Column(String)
+    role_id = Column(Integer, ForeignKey("roles.id"), default=1, nullable=False)
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
-    interests = relationship("UserInterest", back_populates="user")
-    posts = relationship("Post", back_populates="author")
+
+class Role(Base):
+    __tablename__ = "roles"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
 
 
 class Interest(Base):
@@ -25,8 +33,7 @@ class Interest(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     description = Column(Text, nullable=True)
 
-    users = relationship("UserInterest", back_populates="interest")
-    posts = relationship("Post", back_populates="interest")
+
 
 
 class UserInterest(Base):
@@ -35,9 +42,6 @@ class UserInterest(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     interest_id = Column(Integer, ForeignKey("interests.id"), nullable=False)
-
-    user = relationship("User", back_populates="interests")
-    interest = relationship("Interest", back_populates="users")
 
 
 class Post(Base):
@@ -51,9 +55,7 @@ class Post(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     interest_id = Column(Integer, ForeignKey("interests.id"), nullable=False)
 
-    author = relationship("User", back_populates="posts")
-    interest = relationship("Interest", back_populates="posts")
-    comments = relationship("Comment", back_populates="post")
+
 
 
 class Comment(Base):
@@ -66,5 +68,3 @@ class Comment(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
 
-    author = relationship("User")
-    post = relationship("Post", back_populates="comments")
