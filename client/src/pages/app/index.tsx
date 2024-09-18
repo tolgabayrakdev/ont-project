@@ -5,7 +5,7 @@ import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicros
 
 type Post = {
   id: number;
-  title: string;  // Yeni eklenen alan
+  title: string;
   content: string;
   interest_name: string;
   author: {
@@ -14,6 +14,17 @@ type Post = {
   };
   created_at: string;
   updated_at: string;
+  comments?: Comment[];
+}
+
+type Comment = {
+  id: number;
+  content: string;
+  author: {
+    username: string;
+    image_url: string | null;
+  };
+  created_at: string;
 }
 
 type Interest = {
@@ -43,7 +54,9 @@ export default function Index() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showAllPosts, setShowAllPosts] = useState(true);
   const [opened, { open, close }] = useDisclosure(false);
-  const [newPostTitle, setNewPostTitle] = useState("");  // Yeni eklenen state
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [detailModalOpened, { open: openDetailModal, close: closeDetailModal }] = useDisclosure(false);
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -89,7 +102,7 @@ export default function Index() {
           },
           credentials: 'include',
           body: JSON.stringify({
-            title: newPostTitle,  // Yeni eklenen alan
+            title: newPostTitle,
             content: newPost,
             interest_id: interests.find(i => i.interest_name === selectedCategory)?.interest_id
           }),
@@ -98,7 +111,7 @@ export default function Index() {
         if (response.ok) {
           const newPostData = await response.json();
           setPosts(prevPosts => [newPostData, ...prevPosts]);
-          setNewPostTitle("");  // Yeni eklenen reset
+          setNewPostTitle("");
           setNewPost("");
           setSelectedCategory(null);
           close();
@@ -114,6 +127,23 @@ export default function Index() {
   const handleFilterChange = (values: string[]) => {
     setSelectedFilters(values);
     setShowAllPosts(values.length === 0);
+  };
+
+  const handlePostExpand = async (post: Post) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/v1/post/${post.id}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const detailedPost = await response.json();
+        setSelectedPost(detailedPost);
+        openDetailModal();
+      } else {
+        console.error("Failed to fetch post details");
+      }
+    } catch (error) {
+      console.error("Error fetching post details:", error);
+    }
   };
 
   return (
@@ -175,7 +205,7 @@ export default function Index() {
               </Group>
               <Text size="lg" fw={700} mb="xs">{post.title}</Text>
               <Text mb="xs">{post.content}</Text>
-              <Group spacing="xs">
+              <Group>
                 <ThemeIcon color={color} variant="light" size="sm">
                   {icon}
                 </ThemeIcon>
@@ -183,11 +213,55 @@ export default function Index() {
                   {post.interest_name}
                 </Text>
               </Group>
-              <Text size="xs" c="dimmed" mt="md">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
+              <Group p="apart" mt="md">
+                <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
+                <Button variant="subtle" size="xs" onClick={() => handlePostExpand(post)}>
+                  Büyült
+                </Button>
+              </Group>
             </Card>
           );
         })}
       </Stack>
+
+      <Modal opened={detailModalOpened} onClose={closeDetailModal} size="lg" title="Post Detayları">
+        {selectedPost && (
+          <Box>
+            <Group mb="md">
+              <Avatar src={selectedPost.author.image_url ? "http://localhost:8000" + selectedPost.author.image_url : undefined} radius="xl" size="lg" />
+              <Box>
+                <Text size="lg" fw={700}>{selectedPost.author.username}</Text>
+                <Text size="sm" c="dimmed">Oluşturulma: {new Date(selectedPost.created_at).toLocaleString()}</Text>
+              </Box>
+            </Group>
+            <Text size="xl" fw={700} mb="sm">{selectedPost.title}</Text>
+            <Text mb="md">{selectedPost.content}</Text>
+            <Group mb="md">
+              <ThemeIcon color={interestIcons[selectedPost.interest_name as InterestIconKey]?.color || 'gray'} variant="light" size="sm">
+                {interestIcons[selectedPost.interest_name as InterestIconKey]?.icon || interestIcons['default'].icon}
+              </ThemeIcon>
+              <Text size="sm" c="dimmed">{selectedPost.interest_name}</Text>
+            </Group>
+            <Text size="lg" fw={700} mb="sm">Yorumlar</Text>
+            {selectedPost.comments && selectedPost.comments.length > 0 ? (
+              <Stack>
+                {selectedPost.comments.map((comment) => (
+                  <Card key={comment.id} shadow="sm" p="sm">
+                    <Group mb="xs">
+                      <Avatar src={comment.author.image_url ? "http://localhost:8000" + comment.author.image_url : undefined} radius="xl" size="sm" />
+                      <Text size="sm" fw={500}>{comment.author.username}</Text>
+                    </Group>
+                    <Text size="sm">{comment.content}</Text>
+                    <Text size="xs" c="dimmed" mt="xs">Oluşturulma: {new Date(comment.created_at).toLocaleString()}</Text>
+                  </Card>
+                ))}
+              </Stack>
+            ) : (
+              <Text c="dimmed">Henüz yorum yok.</Text>
+            )}
+          </Box>
+        )}
+      </Modal>
     </Box>
   )
 }

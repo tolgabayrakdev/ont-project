@@ -105,7 +105,7 @@ class PostService:
             "content": post.content,
             "author": {
                 "username": user.username if user else "Unknown",
-                "image_url": user.image_url if user and user.image_url else None
+                "image_url": user.image_url if user and user.image_url else None # type: ignore
             },
             "interest_name": interest.name if interest else "Unknown",
             "created_at": post.created_at,
