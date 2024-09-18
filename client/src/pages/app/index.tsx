@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Button, Card, Stack, Modal, TextInput, Select, Group, MultiSelect, Checkbox, Avatar } from "@mantine/core";
+import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
+import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
 
 type Post = {
   id: number;
+  title: string;  // Yeni eklenen alan
   content: string;
-  category: string;
-  comments: string[];
+  interest_name: string;
   author: {
-    name: string;
-    avatar: string;
+    username: string;
+    image_url: string | null;
   };
+  created_at: string;
+  updated_at: string;
 }
 
 type Interest = {
@@ -19,6 +22,17 @@ type Interest = {
   interest_id: number;
   interest_name: string;
 }
+
+const interestIcons = {
+  'Teknoloji': { icon: <IconDeviceDesktop size="1.2rem" />, color: 'blue' },
+  'Spor': { icon: <IconBallFootball size="1.2rem" />, color: 'green' },
+  'Müzik': { icon: <IconMusic size="1.2rem" />, color: 'yellow' },
+  'Sanat': { icon: <IconPalette size="1.2rem" />, color: 'pink' },
+  'Bilim': { icon: <IconMicroscope size="1.2rem" />, color: 'violet' },
+  'default': { icon: <IconQuestionMark size="1.2rem" />, color: 'gray' },
+};
+
+type InterestIconKey = keyof typeof interestIcons;
 
 export default function Index() {
   const [interests, setInterests] = useState<Interest[]>([]);
@@ -29,6 +43,7 @@ export default function Index() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showAllPosts, setShowAllPosts] = useState(true);
   const [opened, { open, close }] = useDisclosure(false);
+  const [newPostTitle, setNewPostTitle] = useState("");  // Yeni eklenen state
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -46,14 +61,10 @@ export default function Index() {
       const interestsData = await interestsRes.json();
       setInterests(interestsData);
 
-      // Fetch posts (this is a placeholder, replace with actual API call)
-      const postsData = [
-        { id: 1, content: "Yeni bir teknoloji gelişmesi", category: "Teknoloji", comments: [], author: { name: "Ali Yılmaz", avatar: "https://i.pravatar.cc/150?img=1" } },
-        { id: 2, content: "Bugünkü maç sonuçları", category: "Spor", comments: [], author: { name: "Ayşe Demir", avatar: "https://i.pravatar.cc/150?img=2" } },
-        { id: 3, content: "Yeni çıkan albüm", category: "Müzik", comments: [], author: { name: "Mehmet Kaya", avatar: "https://i.pravatar.cc/150?img=3" } },
-        { id: 4, content: "Sanat galerisi açılışı", category: "Sanat", comments: [], author: { name: "Zeynep Çelik", avatar: "https://i.pravatar.cc/150?img=4" } },
-        { id: 5, content: "Bilimsel keşif", category: "Bilim", comments: [], author: { name: "Emre Şahin", avatar: "https://i.pravatar.cc/150?img=5" } },
-      ];
+      const postsRes = await fetch("http://localhost:8000/api/v1/post", {
+        credentials: 'include'
+      });
+      const postsData = await postsRes.json();
       setPosts(postsData);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -64,26 +75,39 @@ export default function Index() {
     if (showAllPosts) {
       setFilteredPosts(posts);
     } else {
-      setFilteredPosts(posts.filter(post => selectedFilters.includes(post.category)));
+      setFilteredPosts(posts.filter(post => selectedFilters.includes(post.interest_name)));
     }
   };
 
-  const handlePostShare = () => {
-    if (newPost && selectedCategory) {
-      const newPostObj: Post = {
-        id: Date.now(),
-        content: newPost,
-        category: selectedCategory,
-        comments: [],
-        author: {
-          name: "Mevcut Kullanıcı", // Bu kısmı gerçek kullanıcı bilgisiyle değiştirin
-          avatar: "https://i.pravatar.cc/150?img=0" // Bu kısmı gerçek kullanıcı avatarıyla değiştirin
+  const handlePostShare = async () => {
+    if (newPostTitle && newPost && selectedCategory) {
+      try {
+        const response = await fetch("http://localhost:8000/api/v1/post", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            title: newPostTitle,  // Yeni eklenen alan
+            content: newPost,
+            interest_id: interests.find(i => i.interest_name === selectedCategory)?.interest_id
+          }),
+        });
+
+        if (response.ok) {
+          const newPostData = await response.json();
+          setPosts(prevPosts => [newPostData, ...prevPosts]);
+          setNewPostTitle("");  // Yeni eklenen reset
+          setNewPost("");
+          setSelectedCategory(null);
+          close();
+        } else {
+          console.error("Failed to create post");
         }
-      };
-      setPosts(prevPosts => [newPostObj, ...prevPosts]);
-      setNewPost("");
-      setSelectedCategory(null);
-      close();
+      } catch (error) {
+        console.error("Error creating post:", error);
+      }
     }
   };
 
@@ -116,32 +140,53 @@ export default function Index() {
 
       <Modal opened={opened} onClose={close} title="Yeni İçerik Paylaş">
         <TextInput
+          placeholder="Başlık..."
+          value={newPostTitle}
+          onChange={(e) => setNewPostTitle(e.currentTarget.value)}
+          mb="sm"
+        />
+        <Textarea
           placeholder="İçerik..."
           value={newPost}
           onChange={(e) => setNewPost(e.currentTarget.value)}
+          minRows={3}
+          maxRows={10}
+          autosize
           mb="sm"
         />
         <Select
           placeholder="Kategori seçin"
-          data={interests}
+          data={interests.map(i => ({ value: i.interest_name, label: i.interest_name }))}
           value={selectedCategory}
           onChange={setSelectedCategory}
           mb="sm"
         />
-        <Button onClick={handlePostShare} disabled={!newPost || !selectedCategory}>Paylaş</Button>
+        <Button onClick={handlePostShare} disabled={!newPostTitle || !newPost || !selectedCategory}>Paylaş</Button>
       </Modal>
 
       <Stack>
-        {filteredPosts.map((post) => (
-          <Card key={post.id} shadow="sm" p="lg">
-            <Group mb="xs">
-              <Avatar src={post.author.avatar} radius="xl" />
-              <Text>{post.author.name}</Text>
-            </Group>
-            <Text mb="xs">{post.content}</Text>
-            <Text size="sm" color="dimmed" mb="md">Kategori: {post.category}</Text>
-          </Card>
-        ))}
+        {filteredPosts.map((post) => {
+          const { icon, color } = interestIcons[post.interest_name as InterestIconKey] || interestIcons['default'];
+          return (
+            <Card key={post.id} shadow="sm" p="lg">
+              <Group mb="xs">
+                <Avatar src={post.author.image_url ? "http://localhost:8000" + post.author.image_url : undefined} radius="xl" />
+                <Text>{post.author.username}</Text>
+              </Group>
+              <Text size="lg" fw={700} mb="xs">{post.title}</Text>
+              <Text mb="xs">{post.content}</Text>
+              <Group spacing="xs">
+                <ThemeIcon color={color} variant="light" size="sm">
+                  {icon}
+                </ThemeIcon>
+                <Text size="sm" c="dimmed">
+                  {post.interest_name}
+                </Text>
+              </Group>
+              <Text size="xs" c="dimmed" mt="md">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
+            </Card>
+          );
+        })}
       </Stack>
     </Box>
   )
