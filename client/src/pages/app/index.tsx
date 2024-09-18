@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon } from "@mantine/core";
+import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
 import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
 
@@ -57,6 +57,7 @@ export default function Index() {
   const [newPostTitle, setNewPostTitle] = useState("");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [detailModalOpened, { open: openDetailModal, close: closeDetailModal }] = useDisclosure(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -67,6 +68,7 @@ export default function Index() {
   }, [posts, selectedFilters, showAllPosts]);
 
   const fetchUserInterestsAndPosts = async () => {
+    setIsLoading(true);
     try {
       const interestsRes = await fetch("https://ont-project.onrender.com/api/v1/interest", {
         credentials: 'include'
@@ -81,6 +83,8 @@ export default function Index() {
       setPosts(postsData);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -168,6 +172,42 @@ export default function Index() {
         mb="md"
       />
 
+      {isLoading ? (
+        <Group justify="center">
+          <Loader />
+        </Group>
+      ) : (
+        <Stack>
+          {filteredPosts.map((post) => {
+            const { icon, color } = interestIcons[post.interest_name as InterestIconKey] || interestIcons['default'];
+            return (
+              <Card key={post.id} shadow="sm" p="lg">
+                <Group mb="xs">
+                  <Avatar src={post.author.image_url ? "https://ont-project.onrender.com" + post.author.image_url : undefined} radius="xl" />
+                  <Text>{post.author.username}</Text>
+                </Group>
+                <Text size="lg" fw={700} mb="xs">{post.title}</Text>
+                <Text mb="xs">{post.content}</Text>
+                <Group>
+                  <ThemeIcon color={color} variant="light" size="sm">
+                    {icon}
+                  </ThemeIcon>
+                  <Text size="sm" c="dimmed">
+                    {post.interest_name}
+                  </Text>
+                </Group>
+                <Group p="apart" mt="md">
+                  <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
+                  <Button variant="subtle" size="xs" onClick={() => handlePostExpand(post)}>
+                    Büyült
+                  </Button>
+                </Group>
+              </Card>
+            );
+          })}
+        </Stack>
+      )}
+
       <Modal opened={opened} onClose={close} title="Yeni İçerik Paylaş">
         <TextInput
           placeholder="Başlık..."
@@ -193,36 +233,6 @@ export default function Index() {
         />
         <Button onClick={handlePostShare} disabled={!newPostTitle || !newPost || !selectedCategory}>Paylaş</Button>
       </Modal>
-
-      <Stack>
-        {filteredPosts.map((post) => {
-          const { icon, color } = interestIcons[post.interest_name as InterestIconKey] || interestIcons['default'];
-          return (
-            <Card key={post.id} shadow="sm" p="lg">
-              <Group mb="xs">
-                <Avatar src={post.author.image_url ? "https://ont-project.onrender.com" + post.author.image_url : undefined} radius="xl" />
-                <Text>{post.author.username}</Text>
-              </Group>
-              <Text size="lg" fw={700} mb="xs">{post.title}</Text>
-              <Text mb="xs">{post.content}</Text>
-              <Group>
-                <ThemeIcon color={color} variant="light" size="sm">
-                  {icon}
-                </ThemeIcon>
-                <Text size="sm" c="dimmed">
-                  {post.interest_name}
-                </Text>
-              </Group>
-              <Group p="apart" mt="md">
-                <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
-                <Button variant="subtle" size="xs" onClick={() => handlePostExpand(post)}>
-                  Büyült
-                </Button>
-              </Group>
-            </Card>
-          );
-        })}
-      </Stack>
 
       <Modal opened={detailModalOpened} onClose={closeDetailModal} size="lg" title="Post Detayları">
         {selectedPost && (

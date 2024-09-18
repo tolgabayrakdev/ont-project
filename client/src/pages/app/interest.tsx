@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, Checkbox, Group, Button, Card, SimpleGrid, ThemeIcon, Tooltip } from '@mantine/core';
+import { Box, Text, Checkbox, Group, Button, Card, SimpleGrid, ThemeIcon, Tooltip, Loader } from '@mantine/core';
 import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications'; 
 
@@ -32,6 +32,7 @@ const interestIcons = {
 export default function Interest() {
   const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<UserInterest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchInterests();
@@ -39,6 +40,7 @@ export default function Interest() {
   }, []);
 
   const fetchInterests = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch('https://ont-project.onrender.com/api/v1/interest/all', {
         credentials: 'include'
@@ -50,6 +52,8 @@ export default function Interest() {
       setAvailableInterests(data);
     } catch (error) {
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,43 +120,51 @@ export default function Interest() {
     <Box>
       <Text size="xl" fw={700} mb="md">İlgi Alanları</Text>
 
-      <SimpleGrid
-        cols={{ base: 1, xs: 2, sm: 3, md: 4 }}
-        spacing={{ base: 'xs', sm: 'sm', md: 'md' }}
-        mb="xl"
-      >
-        {availableInterests.map((interest) => {
-          const { icon, color } = interestIcons[interest.name as InterestIconKey] || interestIcons['default'];
-          const isSelected = selectedInterests.some(si => si.interest_name === interest.name);
-          return (
-            <Card key={interest.id} shadow="sm" padding="xs" radius="md" withBorder>
-              <Card.Section withBorder inheritPadding py="xs">
-                <Group justify="space-between" wrap="nowrap">
-                  <Group wrap="nowrap">
-                    <ThemeIcon color={color} variant="light" size="sm">
-                      {icon}
-                    </ThemeIcon>
-                    <Tooltip
-                      label={interest.description}
-                      position="bottom"
-                      withArrow
-                    >
-                      <Text size="sm" lineClamp={1}>{interest.name}</Text>
-                    </Tooltip>
-                  </Group>
-                </Group>
-              </Card.Section>
-              <Checkbox
-                mt="xs"
-                checked={isSelected}
-                onChange={() => handleInterestToggle(interest.id, interest.name)}
-                label="İlgileniyorum"
-              />
-            </Card>
-          );
-        })}
-      </SimpleGrid>
-      <Button onClick={handleSaveInterests} mt="md">İlgi Alanlarını Kaydet</Button>
+      {isLoading ? (
+        <Group justify="center">
+          <Loader />
+        </Group>
+      ) : (
+        <>
+          <SimpleGrid
+            cols={{ base: 1, xs: 2, sm: 3, md: 4 }}
+            spacing={{ base: 'xs', sm: 'sm', md: 'md' }}
+            mb="xl"
+          >
+            {availableInterests.map((interest) => {
+              const { icon, color } = interestIcons[interest.name as InterestIconKey] || interestIcons['default'];
+              const isSelected = selectedInterests.some(si => si.interest_name === interest.name);
+              return (
+                <Card key={interest.id} shadow="sm" padding="xs" radius="md" withBorder>
+                  <Card.Section withBorder inheritPadding py="xs">
+                    <Group justify="space-between" wrap="nowrap">
+                      <Group wrap="nowrap">
+                        <ThemeIcon color={color} variant="light" size="sm">
+                          {icon}
+                        </ThemeIcon>
+                        <Tooltip
+                          label={interest.description}
+                          position="bottom"
+                          withArrow
+                        >
+                          <Text size="sm" lineClamp={1}>{interest.name}</Text>
+                        </Tooltip>
+                      </Group>
+                    </Group>
+                  </Card.Section>
+                  <Checkbox
+                    mt="xs"
+                    checked={isSelected}
+                    onChange={() => handleInterestToggle(interest.id, interest.name)}
+                    label="İlgileniyorum"
+                  />
+                </Card>
+              );
+            })}
+          </SimpleGrid>
+          <Button onClick={handleSaveInterests} mt="md">İlgi Alanlarını Kaydet</Button>
+        </>
+      )}
     </Box>
   );
 }
