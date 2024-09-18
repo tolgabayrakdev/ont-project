@@ -58,6 +58,7 @@ export default function Index() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [detailModalOpened, { open: openDetailModal, close: closeDetailModal }] = useDisclosure(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPostDetailLoading, setIsPostDetailLoading] = useState(false);
   const { colorScheme } = useMantineColorScheme();
   const dark = colorScheme === 'dark';
 
@@ -136,6 +137,7 @@ export default function Index() {
   };
 
   const handlePostExpand = async (post: Post) => {
+    setIsPostDetailLoading(true);
     try {
       const response = await fetch(`https://ont-project.onrender.com/api/v1/post/${post.id}`, {
         credentials: 'include'
@@ -149,6 +151,8 @@ export default function Index() {
       }
     } catch (error) {
       console.error("Error fetching post details:", error);
+    } finally {
+      setIsPostDetailLoading(false);
     }
   };
 
@@ -237,7 +241,11 @@ export default function Index() {
       </Modal>
 
       <Modal opened={detailModalOpened} onClose={closeDetailModal} size="lg" title="Post Detayları">
-        {selectedPost && (
+        {isPostDetailLoading ? (
+          <Group justify="center">
+            <Loader color={dark ? 'white' : 'dark'} />
+          </Group>
+        ) : selectedPost ? (
           <Box>
             <Group mb="md">
               <Avatar src={selectedPost.author.image_url ? "https://ont-project.onrender.com" + selectedPost.author.image_url : undefined} radius="xl" size="lg" />
@@ -272,6 +280,8 @@ export default function Index() {
               <Text c="dimmed">Henüz yorum yok.</Text>
             )}
           </Box>
+        ) : (
+          <Text>Post detayları yüklenemedi.</Text>
         )}
       </Modal>
     </Box>
