@@ -59,19 +59,40 @@ class InterestService:
     def get_user_interests(db: Session, user_id: int):
         try:
             user_interests = (
-                db.query(UserInterest, Interest.name)
+                db.query(UserInterest, Interest.id.label('interest_id'), Interest.name)
                 .join(Interest, UserInterest.interest_id == Interest.id)
                 .filter(UserInterest.user_id == user_id)
                 .all()
             )
             return [
                 {
+                    "id": ui.UserInterest.id,
                     "user_id": ui.UserInterest.user_id,
+                    "interest_id": ui.interest_id,
                     "interest_name": ui.name
                 }
                 for ui in user_interests
             ]
         except SQLAlchemyError:
+            raise HTTPException(
+                status_code=500, detail="An unexpected server error occurred."
+            )
+
+    @staticmethod
+    def update_user_interests(db: Session, user_id: int, interest_ids: list[int]):
+        try:
+            # Remove all existing user interests
+            db.query(UserInterest).filter(UserInterest.user_id == user_id).delete()
+
+            # Add new user interests
+            for interest_id in interest_ids:
+                user_interest = UserInterest(user_id=user_id, interest_id=interest_id)
+                db.add(user_interest)
+
+            db.commit()
+            return {"message": "User interests updated successfully"}
+        except SQLAlchemyError:
+            db.rollback()
             raise HTTPException(
                 status_code=500, detail="An unexpected server error occurred."
             )

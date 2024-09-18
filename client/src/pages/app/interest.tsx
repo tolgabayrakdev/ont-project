@@ -1,74 +1,117 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, Checkbox, Group, Button, Badge, ThemeIcon, Tooltip, Card, SimpleGrid } from '@mantine/core';
-import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope } from '@tabler/icons-react';
+import { Box, Text, Checkbox, Group, Button, Card, SimpleGrid, ThemeIcon, Tooltip } from '@mantine/core';
+import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications'; // Bu satırı ekleyin
 
 type Interest = {
+  id: number;
   name: string;
-  postCount: number;
-  icon: React.ReactNode;
-  color: string;
   description: string;
 };
 
-const interestData: Interest[] = [
-  {
-    name: 'Teknoloji',
-    postCount: 0,
-    icon: <IconDeviceDesktop size="1.2rem" />,
-    color: 'blue',
-    description: 'Yazılım, donanım ve yeni teknolojik gelişmeler hakkında paylaşımlar'
-  },
-  {
-    name: 'Spor',
-    postCount: 0,
-    icon: <IconBallFootball size="1.2rem" />,
-    color: 'green',
-    description: 'Çeşitli spor dalları, fitness ve sağlıklı yaşam hakkında içerikler'
-  },
-  {
-    name: 'Müzik',
-    postCount: 0,
-    icon: <IconMusic size="1.2rem" />,
-    color: 'yellow',
-    description: 'Müzik türleri, sanatçılar ve enstrümanlar hakkında paylaşımlar'
-  },
-  {
-    name: 'Sanat',
-    postCount: 0,
-    icon: <IconPalette size="1.2rem" />,
-    color: 'pink',
-    description: 'Resim, heykel, fotoğrafçılık ve diğer sanat dalları ile ilgili içerikler'
-  },
-  {
-    name: 'Bilim',
-    postCount: 0,
-    icon: <IconMicroscope size="1.2rem" />,
-    color: 'violet',
-    description: 'Bilimsel keşifler, araştırmalar ve ilginç bilimsel gerçekler'
-  },
-];
+type UserInterest = {
+  id: number;
+  user_id: number;
+  interest_id: number;
+  interest_name: string;
+};
+
+type InterestIconKey = keyof typeof interestIcons;
+
+// Sabit icon ve renk eşleştirmeleri
+const interestIcons = {
+  'Teknoloji': { icon: <IconDeviceDesktop size="1.2rem" />, color: 'blue' },
+  'Spor': { icon: <IconBallFootball size="1.2rem" />, color: 'green' },
+  'Müzik': { icon: <IconMusic size="1.2rem" />, color: 'yellow' },
+  'Sanat': { icon: <IconPalette size="1.2rem" />, color: 'pink' },
+  'Bilim': { icon: <IconMicroscope size="1.2rem" />, color: 'violet' },
+  // Varsayılan icon ve renk
+  'default': { icon: <IconQuestionMark size="1.2rem" />, color: 'gray' },
+};
 
 export default function Interest() {
-  const [availableInterests, setAvailableInterests] = useState<Interest[]>(interestData);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<UserInterest[]>([]);
 
   useEffect(() => {
-    // Burada sunucudan ilgi alanları ve post sayıları alınabilir
-    // Örnek: fetchInterestsAndPostCounts();
+    fetchInterests();
+    fetchUserInterests();
   }, []);
 
-  const handleInterestToggle = (interestName: string) => {
-    setSelectedInterests(prev =>
-      prev.includes(interestName)
-        ? prev.filter(i => i !== interestName)
-        : [...prev, interestName]
-    );
+  const fetchInterests = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/interest/all', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setAvailableInterests(data);
+    } catch (error) {
+      console.error('İlgi alanları yüklenirken hata oluştu:', error);
+    }
   };
 
-  const handleSaveInterests = () => {
-    // Seçilen ilgi alanlarını sunucuya kaydetme işlemi
-    console.log('Kaydedilen ilgi alanları:', selectedInterests);
-    // Örnek: saveUserInterests(selectedInterests);
+  const fetchUserInterests = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/interest', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setSelectedInterests(data);
+    } catch (error) {
+      console.error('Kullanıcı ilgi alanları yüklenirken hata oluştu:', error);
+    }
+  };
+
+  const handleInterestToggle = (interestId: number, interestName: string) => {
+    setSelectedInterests(prev => {
+      const isSelected = prev.some(interest => interest.interest_id === interestId);
+      if (isSelected) {
+        return prev.filter(interest => interest.interest_id !== interestId);
+      } else {
+        return [...prev, { id: 0, user_id: 0, interest_id: interestId, interest_name: interestName }];
+      }
+    });
+  };
+
+  const handleSaveInterests = async () => {
+    try {
+      const interestIds = selectedInterests.map(interest => interest.interest_id);
+      const response = await fetch('http://localhost:8000/api/v1/interest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ interest_ids: interestIds }),
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      console.log('İlgi alanları başarıyla kaydedildi');
+      fetchUserInterests();
+      
+      // Başarılı bildirim göster
+      notifications.show({
+        title: 'Başarılı',
+        message: 'İlgi alanları başarıyla kaydedildi',
+        color: 'green',
+      });
+    } catch (error) {
+      console.error('İlgi alanları kaydedilirken hata oluştu:', error);
+      
+      // Hata bildirimi göster
+      notifications.show({
+        title: 'Hata',
+        message: 'İlgi alanları kaydedilirken bir hata oluştu',
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -80,36 +123,38 @@ export default function Interest() {
         spacing={{ base: 'xs', sm: 'sm', md: 'md' }}
         mb="xl"
       >
-        {availableInterests.map((interest) => (
-          <Card key={interest.name} shadow="sm" padding="xs" radius="md" withBorder>
-            <Card.Section withBorder inheritPadding py="xs">
-              <Group justify="space-between" wrap="nowrap">
-                <Group wrap="nowrap">
-                  <ThemeIcon color={interest.color} variant="light" size="sm">
-                    {interest.icon}
-                  </ThemeIcon>
-                  <Tooltip
-                    label={interest.description}
-                    position="bottom"
-                    withArrow
-                  >
-                    <Text size="sm" lineClamp={1}>{interest.name}</Text>
-                  </Tooltip>
+        {availableInterests.map((interest) => {
+          const { icon, color } = interestIcons[interest.name as InterestIconKey] || interestIcons['default'];
+          const isSelected = selectedInterests.some(si => si.interest_name === interest.name);
+          return (
+            <Card key={interest.id} shadow="sm" padding="xs" radius="md" withBorder>
+              <Card.Section withBorder inheritPadding py="xs">
+                <Group justify="space-between" wrap="nowrap">
+                  <Group wrap="nowrap">
+                    <ThemeIcon color={color} variant="light" size="sm">
+                      {icon}
+                    </ThemeIcon>
+                    <Tooltip
+                      label={interest.description}
+                      position="bottom"
+                      withArrow
+                    >
+                      <Text size="sm" lineClamp={1}>{interest.name}</Text>
+                    </Tooltip>
+                  </Group>
                 </Group>
-                <Badge color={interest.color} size="sm">{interest.postCount}</Badge>
-              </Group>
-            </Card.Section>
-            <Checkbox
-              mt="xs"
-              size="xs"
-              label="İlgileniyorum"
-              checked={selectedInterests.includes(interest.name)}
-              onChange={() => handleInterestToggle(interest.name)}
-            />
-          </Card>
-        ))}
+              </Card.Section>
+              <Checkbox
+                mt="xs"
+                checked={isSelected}
+                onChange={() => handleInterestToggle(interest.id, interest.name)}
+                label="İlgileniyorum"
+              />
+            </Card>
+          );
+        })}
       </SimpleGrid>
-      <Button onClick={handleSaveInterests}>İlgi Alanlarını Kaydet</Button>
+      <Button onClick={handleSaveInterests} mt="md">İlgi Alanlarını Kaydet</Button>
     </Box>
   );
 }
