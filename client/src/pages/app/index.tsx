@@ -13,8 +13,15 @@ type Post = {
   };
 }
 
+type Interest = {
+  id: number;
+  user_id: number;
+  interest_id: number;
+  interest_name: string;
+}
+
 export default function Index() {
-  const [interests, setInterests] = useState<string[]>([]);
+  const [interests, setInterests] = useState<Interest[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
@@ -32,16 +39,25 @@ export default function Index() {
   }, [posts, selectedFilters, showAllPosts]);
 
   const fetchUserInterestsAndPosts = async () => {
-    // Bu fonksiyon sunucudan kullanıcının ilgi alanlarını ve ilgili postları getirecek
-    // Örnek veri:
-    setInterests(["Teknoloji", "Spor", "Müzik", "Sanat", "Bilim"]);
-    setPosts([
-      { id: 1, content: "Yeni bir teknoloji gelişmesi", category: "Teknoloji", comments: [], author: { name: "Ali Yılmaz", avatar: "https://i.pravatar.cc/150?img=1" } },
-      { id: 2, content: "Bugünkü maç sonuçları", category: "Spor", comments: [], author: { name: "Ayşe Demir", avatar: "https://i.pravatar.cc/150?img=2" } },
-      { id: 3, content: "Yeni çıkan albüm", category: "Müzik", comments: [], author: { name: "Mehmet Kaya", avatar: "https://i.pravatar.cc/150?img=3" } },
-      { id: 4, content: "Sanat galerisi açılışı", category: "Sanat", comments: [], author: { name: "Zeynep Çelik", avatar: "https://i.pravatar.cc/150?img=4" } },
-      { id: 5, content: "Bilimsel keşif", category: "Bilim", comments: [], author: { name: "Emre Şahin", avatar: "https://i.pravatar.cc/150?img=5" } },
-    ]);
+    try {
+      const interestsRes = await fetch("http://localhost:8000/api/v1/interest", {
+        credentials: 'include'
+      });
+      const interestsData = await interestsRes.json();
+      setInterests(interestsData);
+
+      // Fetch posts (this is a placeholder, replace with actual API call)
+      const postsData = [
+        { id: 1, content: "Yeni bir teknoloji gelişmesi", category: "Teknoloji", comments: [], author: { name: "Ali Yılmaz", avatar: "https://i.pravatar.cc/150?img=1" } },
+        { id: 2, content: "Bugünkü maç sonuçları", category: "Spor", comments: [], author: { name: "Ayşe Demir", avatar: "https://i.pravatar.cc/150?img=2" } },
+        { id: 3, content: "Yeni çıkan albüm", category: "Müzik", comments: [], author: { name: "Mehmet Kaya", avatar: "https://i.pravatar.cc/150?img=3" } },
+        { id: 4, content: "Sanat galerisi açılışı", category: "Sanat", comments: [], author: { name: "Zeynep Çelik", avatar: "https://i.pravatar.cc/150?img=4" } },
+        { id: 5, content: "Bilimsel keşif", category: "Bilim", comments: [], author: { name: "Emre Şahin", avatar: "https://i.pravatar.cc/150?img=5" } },
+      ];
+      setPosts(postsData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   const filterPosts = () => {
@@ -84,7 +100,7 @@ export default function Index() {
       </Group>
 
       <MultiSelect
-        data={interests}
+        data={interests.map(interest => ({ value: interest.interest_name, label: interest.interest_name }))}
         value={selectedFilters}
         onChange={handleFilterChange}
         placeholder="İlgi alanlarına göre filtrele"

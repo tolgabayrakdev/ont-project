@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Text, Checkbox, Group, Button, Card, SimpleGrid, ThemeIcon, Tooltip } from '@mantine/core';
 import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
-import { notifications } from '@mantine/notifications'; // Bu satırı ekleyin
+import { notifications } from '@mantine/notifications'; 
 
 type Interest = {
   id: number;
@@ -49,7 +49,7 @@ export default function Interest() {
       const data = await response.json();
       setAvailableInterests(data);
     } catch (error) {
-      console.error('İlgi alanları yüklenirken hata oluştu:', error);
+      throw error;
     }
   };
 
@@ -64,7 +64,7 @@ export default function Interest() {
       const data = await response.json();
       setSelectedInterests(data);
     } catch (error) {
-      console.error('Kullanıcı ilgi alanları yüklenirken hata oluştu:', error);
+      throw error;
     }
   };
 
@@ -93,9 +93,8 @@ export default function Interest() {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      console.log('İlgi alanları başarıyla kaydedildi');
       fetchUserInterests();
-      
+
       // Başarılı bildirim göster
       notifications.show({
         title: 'Başarılı',
@@ -103,8 +102,7 @@ export default function Interest() {
         color: 'green',
       });
     } catch (error) {
-      console.error('İlgi alanları kaydedilirken hata oluştu:', error);
-      
+
       // Hata bildirimi göster
       notifications.show({
         title: 'Hata',
