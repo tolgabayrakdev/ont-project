@@ -22,12 +22,11 @@ export default function SignIn() {
     setLoading(true);
     try {
       const res = await fetch('https://ont-project.onrender.com/api/v1/auth/login', {
-        
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: "omit",
+        credentials: "include",
         body: JSON.stringify({
           email: values.email,
           password: values.password
