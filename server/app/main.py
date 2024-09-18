@@ -14,7 +14,7 @@ origins = ["http://ont-project-demo-v1.vercel.app", "https://ont-project-demo-v1
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
