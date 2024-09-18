@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader } from "@mantine/core";
+import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
 import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
 
@@ -58,6 +58,8 @@ export default function Index() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [detailModalOpened, { open: openDetailModal, close: closeDetailModal }] = useDisclosure(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { colorScheme } = useMantineColorScheme();
+  const dark = colorScheme === 'dark';
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -174,7 +176,7 @@ export default function Index() {
 
       {isLoading ? (
         <Group justify="center">
-          <Loader />
+          <Loader color={dark ? 'white' : 'dark'} />
         </Group>
       ) : (
         <Stack>

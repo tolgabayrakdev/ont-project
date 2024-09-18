@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, Checkbox, Group, Button, Card, SimpleGrid, ThemeIcon, Tooltip, Loader } from '@mantine/core';
+import { Box, Text, Checkbox, Group, Button, Card, SimpleGrid, ThemeIcon, Tooltip, Loader, useMantineColorScheme } from '@mantine/core';
 import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications'; 
 
@@ -33,6 +33,8 @@ export default function Interest() {
   const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<UserInterest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { colorScheme } = useMantineColorScheme();
+  const dark = colorScheme === 'dark';
 
   useEffect(() => {
     fetchInterests();
@@ -122,7 +124,7 @@ export default function Interest() {
 
       {isLoading ? (
         <Group justify="center">
-          <Loader />
+          <Loader color={dark ? 'white' : 'dark'} />
         </Group>
       ) : (
         <>
