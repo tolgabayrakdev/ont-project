@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme, Notification, Alert } from "@mantine/core";
+import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme, Notification } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
-import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark, IconPlus, IconDots } from '@tabler/icons-react';
+import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark, IconDots } from '@tabler/icons-react';
 
 type Post = {
   id: number;
