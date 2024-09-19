@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme } from "@mantine/core";
+import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme, Notification } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
 import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
 
@@ -65,6 +65,8 @@ export default function Index() {
   const [allComments, setAllComments] = useState<Comment[]>([]);
   const [showAllComments, setShowAllComments] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
+  const [newComment, setNewComment] = useState(""); // Yeni yorum için state
+  const [commentNotification, setCommentNotification] = useState(false); // Bildirim durumu
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -163,6 +165,35 @@ export default function Index() {
         console.error("Error fetching post details:", error);
     } finally {
         setIsPostDetailLoading(false);
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (newComment && selectedPost) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/v1/comment/posts/${selectedPost.id}/comments`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            content: newComment,
+          }),
+        });
+
+        if (response.ok) {
+          const commentData = await response.json();
+          setAllComments(prevComments => [...prevComments, commentData]); // Yeni yorumu ekle
+          setCommentCount(prevCount => prevCount + 1); // Yorum sayısını artır
+          setNewComment(""); // Inputu temizle
+          setCommentNotification(true); // Bildirimi göster
+        } else {
+          console.error("Failed to create comment");
+        }
+      } catch (error) {
+        console.error("Error creating comment:", error);
+      }
     }
   };
 
@@ -272,6 +303,28 @@ export default function Index() {
               </ThemeIcon>
               <Text size="sm" c="dimmed">{selectedPost.interest_name}</Text>
             </Group>
+            <Text size="lg" fw={700} mb="sm">Yorum Ekle</Text>
+            <Textarea
+              placeholder="Yorumunuzu yazın..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.currentTarget.value)}
+              minRows={3}
+              maxRows={5}
+              autosize
+              mb="sm"
+            />
+            <Button onClick={handleCommentSubmit}>Yorum Ekle</Button>
+
+            {commentNotification && (
+              <Notification
+                title="Başarılı"
+                onClose={() => setCommentNotification(false)}
+                color="teal"
+              >
+                Yorumunuz başarıyla eklendi!
+              </Notification>
+            )}
+
             <Text size="lg" fw={700} mb="sm">Yorumlar ({commentCount})</Text>
             {allComments && allComments.length > 0 ? (
               <Stack>
