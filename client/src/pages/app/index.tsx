@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme, Notification } from "@mantine/core";
+import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme, Notification, Alert } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
-import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark } from '@tabler/icons-react';
+import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark, IconPlus } from '@tabler/icons-react';
 
 type Post = {
   id: number;
@@ -67,6 +67,10 @@ export default function Index() {
   const [commentCount, setCommentCount] = useState(0);
   const [newComment, setNewComment] = useState(""); // Yeni yorum için state
   const [commentNotification, setCommentNotification] = useState(false); // Bildirim durumu
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null); // Düzenleme için state
+  const [editingCommentContent, setEditingCommentContent] = useState(""); // Düzenlenecek yorumun içeriği
+  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null); // Silinecek yorumun ID'si
+  const [deleteConfirmationOpened, { open: openDeleteConfirmation, close: closeDeleteConfirmation }] = useDisclosure(false); // Silme onayı durumu
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -197,6 +201,65 @@ export default function Index() {
     }
   };
 
+  const handleCommentEdit = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingCommentContent(comment.content);
+  };
+
+  const handleCommentUpdate = async () => {
+    if (editingCommentId && editingCommentContent) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/v1/comment/${editingCommentId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            content: editingCommentContent,
+          }),
+        });
+
+        if (response.ok) {
+          const updatedComment = await response.json();
+          setAllComments(prevComments => prevComments.map(comment => comment.id === updatedComment.id ? updatedComment : comment));
+          setEditingCommentId(null);
+          setEditingCommentContent("");
+        } else {
+          console.error("Failed to update comment");
+        }
+      } catch (error) {
+        console.error("Error updating comment:", error);
+      }
+    }
+  };
+
+  const handleCommentDelete = (commentId: number) => {
+    setDeleteCommentId(commentId);
+    openDeleteConfirmation();
+  };
+
+  const confirmDeleteComment = async () => {
+    if (deleteCommentId) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/v1/comment/${deleteCommentId}`, {
+          method: "DELETE",
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          setAllComments(prevComments => prevComments.filter(comment => comment.id !== deleteCommentId));
+          setCommentCount(prevCount => prevCount - 1);
+          closeDeleteConfirmation();
+        } else {
+          console.error("Failed to delete comment");
+        }
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+      }
+    }
+  };
+
   return (
     <Box>
       <Group justify="space-between" mb="md">
@@ -245,8 +308,8 @@ export default function Index() {
                 </Group>
                 <Group p="apart" mt="md">
                   <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
-                  <Button variant="subtle" size="xs" onClick={() => handlePostExpand(post)}>
-                    Büyült ({post.commentCount || 0})  {/* Yorum sayısını göster */}
+                  <Button variant="outline" leftSection={<IconPlus />} size="xs" onClick={() => handlePostExpand(post)}>
+                    Büyült  {/* Yorum sayısını göster */}
                   </Button>
                 </Group>
               </Card>
@@ -328,14 +391,37 @@ export default function Index() {
             <Text size="lg" fw={700} mb="sm">Yorumlar ({commentCount})</Text>
             {allComments && allComments.length > 0 ? (
               <Stack>
-                {allComments.slice(0, showAllComments ? allComments.length : 10).map((comment) => (
+                {allComments.map((comment) => (
                   <Card key={comment.id} shadow="sm" p="sm">
                     <Group mb="xs">
                       <Avatar src={comment.author.image_url ? "http://localhost:8000" + comment.author.image_url : undefined} radius="xl" size="sm" />
                       <Text size="sm" fw={500}>{comment.author.username}</Text>
                     </Group>
-                    <Text size="sm">{comment.content}</Text>
+                    {editingCommentId === comment.id ? (
+                      <Textarea
+                        value={editingCommentContent}
+                        onChange={(e) => setEditingCommentContent(e.currentTarget.value)}
+                        minRows={2}
+                        maxRows={5}
+                        autosize
+                      />
+                    ) : (
+                      <Text size="sm">{comment.content}</Text>
+                    )}
                     <Text size="xs" c="dimmed" mt="xs">Oluşturulma: {new Date(comment.created_at).toLocaleString()}</Text>
+                    <Group mt="md">
+                      {editingCommentId === comment.id ? (
+                        <>
+                          <Button onClick={handleCommentUpdate}>Kaydet</Button>
+                          <Button onClick={() => setEditingCommentId(null)}>İptal</Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button onClick={() => handleCommentEdit(comment)}>Düzenle</Button>
+                          <Button color="red" onClick={() => handleCommentDelete(comment.id)}>Sil</Button>
+                        </>
+                      )}
+                    </Group>
                   </Card>
                 ))}
                 {commentCount > 10 && !showAllComments && (
@@ -349,6 +435,14 @@ export default function Index() {
         ) : (
           <Text>Post detayları yüklenemedi.</Text>
         )}
+      </Modal>
+
+      <Modal opened={deleteConfirmationOpened} onClose={closeDeleteConfirmation} title="Yorum Silme Onayı">
+        <Text>Bu yorumu silmek istediğinize emin misiniz?</Text>
+        <Group p="right" mt="md">
+          <Button onClick={closeDeleteConfirmation}>İptal</Button>
+          <Button color="red" onClick={confirmDeleteComment}>Sil</Button>
+        </Group>
       </Modal>
     </Box>
   )

@@ -40,7 +40,18 @@ class CommentService:
                     setattr(db_comment, key, value)
                 db.commit()
                 db.refresh(db_comment)
-                return db_comment
+
+                # Yazar bilgilerini ekleyin
+                author = db.query(User).filter(User.id == user_id).first()
+                return {
+                    "id": db_comment.id,
+                    "content": db_comment.content,
+                    "author": {
+                        "username": author.username if author else "Unknown",
+                        "image_url": author.image_url if author else None,
+                    },
+                    "created_at": db_comment.created_at,
+                }
             return None
         except SQLAlchemyError:
             db.rollback()

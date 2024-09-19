@@ -18,22 +18,15 @@ def create_comment(
     return CommentService.create_comment(db, comment, post_id, current_user["id"])
 
 
-@router.put("/comments/{comment_id}")
-def update_comment(
-    comment_id: int,
-    comment: CommentUpdate,
-    current_user: dict = Depends(authenticated_user),
-    db: Session = Depends(get_db),
-):
-    updated_comment = CommentService.update_comment(
-        db, comment_id, comment, current_user["id"]
-    )
+@router.put("/{comment_id}")
+def update_comment(comment_id: int, comment: CommentUpdate, current_user: dict = Depends(authenticated_user), db: Session = Depends(get_db)):
+    updated_comment = CommentService.update_comment(db, comment_id, comment, current_user["id"])
     if not updated_comment:
         raise HTTPException(status_code=404, detail="Comment not found")
     return updated_comment
 
 
-@router.delete("/comments/{comment_id}")
+@router.delete("/{comment_id}")
 def delete_comment(
     comment_id: int,
     current_user: dict = Depends(authenticated_user),
