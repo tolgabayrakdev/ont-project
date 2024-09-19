@@ -15,6 +15,7 @@ type Post = {
   created_at: string;
   updated_at: string;
   comments?: Comment[];
+  commentCount?: number; // Yorum sayısını ekleyin
 }
 
 type Comment = {
@@ -61,6 +62,9 @@ export default function Index() {
   const [isPostDetailLoading, setIsPostDetailLoading] = useState(false);
   const { colorScheme } = useMantineColorScheme();
   const dark = colorScheme === 'dark';
+  const [allComments, setAllComments] = useState<Comment[]>([]);
+  const [showAllComments, setShowAllComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -139,20 +143,26 @@ export default function Index() {
   const handlePostExpand = async (post: Post) => {
     setIsPostDetailLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/post/${post.id}`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const detailedPost = await response.json();
-        setSelectedPost(detailedPost);
-        openDetailModal();
-      } else {
-        console.error("Failed to fetch post details");
-      }
+        const response = await fetch(`http://localhost:8000/api/v1/comment/posts/${post.id}/comments`, {
+            credentials: 'include'
+        });
+        if (response.ok) {
+            const detailedPost = await response.json();
+            setSelectedPost({
+                ...post, // Mevcut post bilgilerini al
+                comments: detailedPost.comments, // Yorumları ekle
+                commentCount: detailedPost.count // Yorum sayısını ekle
+            });
+            setAllComments(detailedPost.comments || []); // Eğer comments undefined ise boş dizi ata
+            setCommentCount(detailedPost.count || 0); // Yorum sayısını ayarla
+            openDetailModal();
+        } else {
+            console.error("Failed to fetch post details");
+        }
     } catch (error) {
-      console.error("Error fetching post details:", error);
+        console.error("Error fetching post details:", error);
     } finally {
-      setIsPostDetailLoading(false);
+        setIsPostDetailLoading(false);
     }
   };
 
@@ -205,7 +215,7 @@ export default function Index() {
                 <Group p="apart" mt="md">
                   <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
                   <Button variant="subtle" size="xs" onClick={() => handlePostExpand(post)}>
-                    Büyült
+                    Büyült ({post.commentCount || 0})  {/* Yorum sayısını göster */}
                   </Button>
                 </Group>
               </Card>
@@ -262,10 +272,10 @@ export default function Index() {
               </ThemeIcon>
               <Text size="sm" c="dimmed">{selectedPost.interest_name}</Text>
             </Group>
-            <Text size="lg" fw={700} mb="sm">Yorumlar</Text>
-            {selectedPost.comments && selectedPost.comments.length > 0 ? (
+            <Text size="lg" fw={700} mb="sm">Yorumlar ({commentCount})</Text>
+            {allComments && allComments.length > 0 ? (
               <Stack>
-                {selectedPost.comments.map((comment) => (
+                {allComments.slice(0, showAllComments ? allComments.length : 10).map((comment) => (
                   <Card key={comment.id} shadow="sm" p="sm">
                     <Group mb="xs">
                       <Avatar src={comment.author.image_url ? "http://localhost:8000" + comment.author.image_url : undefined} radius="xl" size="sm" />
@@ -275,6 +285,9 @@ export default function Index() {
                     <Text size="xs" c="dimmed" mt="xs">Oluşturulma: {new Date(comment.created_at).toLocaleString()}</Text>
                   </Card>
                 ))}
+                {commentCount > 10 && !showAllComments && (
+                  <Button onClick={() => setShowAllComments(true)}>Daha Fazla Yükle</Button>
+                )}
               </Stack>
             ) : (
               <Text c="dimmed">Henüz yorum yok.</Text>
