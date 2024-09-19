@@ -71,6 +71,7 @@ export default function Index() {
   const [editingCommentContent, setEditingCommentContent] = useState(""); // Düzenlenecek yorumun içeriği
   const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null); // Silinecek yorumun ID'si
   const [deleteConfirmationOpened, { open: openDeleteConfirmation, close: closeDeleteConfirmation }] = useDisclosure(false); // Silme onayı durumu
+  const [visiblePostsCount, setVisiblePostsCount] = useState(5); // Görünen post sayısı
 
   useEffect(() => {
     fetchUserInterestsAndPosts();
@@ -260,6 +261,10 @@ export default function Index() {
     }
   };
 
+  const loadMorePosts = () => {
+    setVisiblePostsCount(prevCount => prevCount + 5); // Her tıklamada 5 post daha yükle
+  };
+
   return (
     <Box>
       <Group justify="space-between" mb="md">
@@ -288,7 +293,7 @@ export default function Index() {
         </Group>
       ) : (
         <Stack>
-          {filteredPosts.map((post) => {
+          {filteredPosts.slice(0, visiblePostsCount).map((post) => {
             const { icon, color } = interestIcons[post.interest_name as InterestIconKey] || interestIcons['default'];
             return (
               <Card key={post.id} shadow="sm" p="lg">
@@ -308,13 +313,16 @@ export default function Index() {
                 </Group>
                 <Group p="apart" mt="md">
                   <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
-                  <Button variant="outline" leftSection={<IconDots />} size="xs" onClick={() => handlePostExpand(post)}>
-                    Yorumları göster  {/* Yorum sayısını göster */}
+                  <Button c={dark ? "white" : "dark"} variant="outline" leftSection={<IconDots />} size="xs" onClick={() => handlePostExpand(post)}>
+                    Yorumları göster
                   </Button>
                 </Group>
               </Card>
             );
           })}
+          {visiblePostsCount < filteredPosts.length && (
+            <Button onClick={loadMorePosts} mt="md">Daha Fazla Göster</Button>
+          )}
         </Stack>
       )}
 
@@ -376,7 +384,7 @@ export default function Index() {
               autosize
               mb="sm"
             />
-            <Button onClick={handleCommentSubmit}>Yorum Ekle</Button>
+            <Button mb="md" onClick={handleCommentSubmit}>Yorum Ekle</Button>
 
             {commentNotification && (
               <Notification
@@ -416,9 +424,14 @@ export default function Index() {
                           <Button onClick={() => setEditingCommentId(null)}>İptal</Button>
                         </>
                       ) : (
+                        // Check if the current user is the author of the comment
                         <>
-                          <Button onClick={() => handleCommentEdit(comment)}>Düzenle</Button>
-                          <Button color="red" onClick={() => handleCommentDelete(comment.id)}>Sil</Button>
+                          {comment.author.username === selectedPost?.author.username && ( // Assuming you have the current user's username
+                            <>
+                              <Button onClick={() => handleCommentEdit(comment)}>Düzenle</Button>
+                              <Button color="red" onClick={() => handleCommentDelete(comment.id)}>Sil</Button>
+                            </>
+                          )}
                         </>
                       )}
                     </Group>
