@@ -84,13 +84,13 @@ export default function Index() {
   const fetchUserInterestsAndPosts = async () => {
     setIsLoading(true);
     try {
-      const interestsRes = await fetch("http://localhost:8000/api/v1/interest", {
+      const interestsRes = await fetch("https://ont-project.onrender.com/api/v1/interest", {
         credentials: 'include'
       });
       const interestsData = await interestsRes.json();
       setInterests(interestsData);
 
-      const postsRes = await fetch("http://localhost:8000/api/v1/post", {
+      const postsRes = await fetch("https://ont-project.onrender.com/api/v1/post", {
         credentials: 'include'
       });
       const postsData = await postsRes.json();
@@ -113,7 +113,7 @@ export default function Index() {
   const handlePostShare = async () => {
     if (newPostTitle && newPost && selectedCategory) {
       try {
-        const response = await fetch("http://localhost:8000/api/v1/post", {
+        const response = await fetch("https://ont-project.onrender.com/api/v1/post", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -150,7 +150,7 @@ export default function Index() {
   const handlePostExpand = async (post: Post) => {
     setIsPostDetailLoading(true);
     try {
-        const response = await fetch(`http://localhost:8000/api/v1/comment/posts/${post.id}/comments`, {
+        const response = await fetch(`https://ont-project.onrender.com/api/v1/comment/posts/${post.id}/comments`, {
             credentials: 'include'
         });
         if (response.ok) {
@@ -176,7 +176,7 @@ export default function Index() {
   const handleCommentSubmit = async () => {
     if (newComment && selectedPost) {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/comment/posts/${selectedPost.id}/comments`, {
+        const response = await fetch(`https://ont-project.onrender.com/api/v1/comment/posts/${selectedPost.id}/comments`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -210,7 +210,7 @@ export default function Index() {
   const handleCommentUpdate = async () => {
     if (editingCommentId && editingCommentContent) {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/comment/${editingCommentId}`, {
+        const response = await fetch(`https://ont-project.onrender.com/api/v1/comment/${editingCommentId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -243,7 +243,7 @@ export default function Index() {
   const confirmDeleteComment = async () => {
     if (deleteCommentId) {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/comment/${deleteCommentId}`, {
+        const response = await fetch(`https://ont-project.onrender.com/api/v1/comment/${deleteCommentId}`, {
           method: "DELETE",
           credentials: 'include',
         });
@@ -298,7 +298,7 @@ export default function Index() {
             return (
               <Card key={post.id} shadow="sm" p="lg">
                 <Group mb="xs">
-                  <Avatar src={post.author.image_url ? "http://localhost:8000" + post.author.image_url : undefined} radius="xl" />
+                  <Avatar src={post.author.image_url ? "https://ont-project.onrender.com" + post.author.image_url : undefined} radius="xl" />
                   <Text>{post.author.username}</Text>
                 </Group>
                 <Text size="lg" fw={700} mb="xs">{post.title}</Text>
@@ -360,7 +360,7 @@ export default function Index() {
         ) : selectedPost ? (
           <Box>
             <Group mb="md">
-              <Avatar src={selectedPost.author.image_url ? "http://localhost:8000" + selectedPost.author.image_url : undefined} radius="xl" size="lg" />
+              <Avatar src={selectedPost.author.image_url ? "https://ont-project.onrender.com" + selectedPost.author.image_url : undefined} radius="xl" size="lg" />
               <Box>
                 <Text size="lg" fw={700}>{selectedPost.author.username}</Text>
                 <Text size="sm" c="dimmed">Oluşturulma: {new Date(selectedPost.created_at).toLocaleString()}</Text>
@@ -402,7 +402,7 @@ export default function Index() {
                 {allComments.map((comment) => (
                   <Card key={comment.id} shadow="sm" p="sm">
                     <Group mb="xs">
-                      <Avatar src={comment.author.image_url ? "http://localhost:8000" + comment.author.image_url : undefined} radius="xl" size="sm" />
+                      <Avatar src={comment.author.image_url ? "https://ont-project.onrender.com" + comment.author.image_url : undefined} radius="xl" size="sm" />
                       <Text size="sm" fw={500}>{comment.author.username}</Text>
                     </Group>
                     {editingCommentId === comment.id ? (

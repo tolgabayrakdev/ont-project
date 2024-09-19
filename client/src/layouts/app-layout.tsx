@@ -20,7 +20,7 @@ function AppLayout() {
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
-        const res = await fetch('http://localhost:8000/api/v1/auth/logout', {
+        const res = await fetch('https://ont-project.onrender.com/api/v1/auth/logout', {
             method: 'POST',
             credentials: 'include',
         })
