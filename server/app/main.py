@@ -10,7 +10,7 @@ model.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = ["http://localhost:5173", "https://localhost:5173"]
+origins = ["http://ont-demo-app.vercel.app", "https://ont-demo-app.vercel.app"]
 
 app.add_middleware(
     CORSMiddleware,
