@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box, Text, Button, Card, Stack, Modal, TextInput, Textarea, Select, Group, MultiSelect, Checkbox, Avatar, ThemeIcon, Loader, useMantineColorScheme, Notification, Alert } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
-import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark, IconPlus } from '@tabler/icons-react';
+import { IconDeviceDesktop, IconBallFootball, IconMusic, IconPalette, IconMicroscope, IconQuestionMark, IconPlus, IconDots } from '@tabler/icons-react';
 
 type Post = {
   id: number;
@@ -308,8 +308,8 @@ export default function Index() {
                 </Group>
                 <Group p="apart" mt="md">
                   <Text size="xs" c="dimmed">Oluşturulma: {new Date(post.created_at).toLocaleString()}</Text>
-                  <Button variant="outline" leftSection={<IconPlus />} size="xs" onClick={() => handlePostExpand(post)}>
-                    Büyült  {/* Yorum sayısını göster */}
+                  <Button variant="outline" leftSection={<IconDots />} size="xs" onClick={() => handlePostExpand(post)}>
+                    Yorumları göster  {/* Yorum sayısını göster */}
                   </Button>
                 </Group>
               </Card>
